@@ -12,11 +12,20 @@ COPY requirements.txt .
 RUN grep -v '^streamlit' requirements.txt > req-api.txt \
     && pip install -r req-api.txt
 
-# Patch every affected TorchXRayVision backbone file; the import appears in
-# both densenet.py and vgg.py in some published versions.
-RUN grep -RIl 'from model.utils import get_norm' /usr/local/lib/python3.11/site-packages/torchxrayvision/baseline_models \
-    | xargs -r sed -i 's/from model\.utils import get_norm/from ..utils import get_norm/g' \
-    && python -c "import torchxrayvision as xrv; xrv.models.DenseNet(weights='densenet121-res224-all')"
+# TorchXRayVision currently ships jfhealthcare backbone files with an
+# invalid absolute import. Patch those files explicitly, then smoke-test import.
+RUN python - <<'PY'
+from pathlib import Path
+root = Path("/usr/local/lib/python3.11/site-packages/torchxrayvision/baseline_models/jfhealthcare/model/backbone")
+for name in ("densenet.py", "vgg.py"):
+    path = root / name
+    text = path.read_text()
+    text = text.replace("from model.utils import get_norm", "from ..utils import get_norm")
+    path.write_text(text)
+    print(f"Patched {path}")
+PY
+
+RUN python -c "import torchxrayvision as xrv; print('TorchXRayVision import OK'); xrv.models.DenseNet(weights='densenet121-res224-all'); print('DenseNet weights OK')"
 
 COPY model.py report.py pipeline.py db.py models.py ratelimit.py assistant.py api.py ./
 
