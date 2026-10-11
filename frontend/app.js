@@ -331,6 +331,7 @@
       say(err.name === "AbortError" ? "Timed out. Please try again." : `Error: ${err.message}`, true);
     } finally {
       clearTimeout(timer);
+      hideScanning();
       els.submit.disabled = !chosen;
     }
   });
