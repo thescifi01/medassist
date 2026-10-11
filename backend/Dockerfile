@@ -12,28 +12,30 @@ COPY requirements.txt .
 RUN grep -v '^streamlit' requirements.txt > req-api.txt \
     && pip install -r req-api.txt
 
-# The published TorchXRayVision jfhealthcare package has this bad import in
-# several backbone files (including inception.py, densenet.py and vgg.py).
-# Patch every Python file in that backbone directory, not just a fixed list.
+# Fix TorchXRayVision's jfhealthcare imports throughout its model package.
+# Files directly in jfhealthcare/model need ".utils"; files in subpackages
+# such as model/backbone need "..utils". Patching only backbone files missed
+# attention_map.py and other modules, which caused repeated startup failures.
 RUN python - <<'PY'
 from pathlib import Path
 
-root = Path("/usr/local/lib/python3.11/site-packages/torchxrayvision/baseline_models/jfhealthcare/model/backbone")
+root = Path("/usr/local/lib/python3.11/site-packages/torchxrayvision/baseline_models/jfhealthcare/model")
 needle = "from model.utils import get_norm"
-replacement = "from ..utils import get_norm"
 patched = []
 
 for path in root.rglob("*.py"):
     source = path.read_text()
-    if needle in source:
-        path.write_text(source.replace(needle, replacement))
-        patched.append(str(path))
+    if needle not in source:
+        continue
+    relative = path.parent.relative_to(root)
+    replacement = "from .utils import get_norm" if str(relative) == "." else "from ..utils import get_norm"
+    path.write_text(source.replace(needle, replacement))
+    patched.append(f"{path.relative_to(root)} -> {replacement}")
 
-print("Patched jfhealthcare backbone files:", patched)
+print("Patched jfhealthcare imports:", patched)
 if not patched:
-    raise SystemExit("Expected broken import was not found; refusing to continue")
+    raise SystemExit("No broken jfhealthcare imports found; inspect installed TorchXRayVision version")
 
-# Fail the image build here if the package/model still cannot import.
 import torchxrayvision as xrv
 print("TorchXRayVision import OK")
 xrv.models.DenseNet(weights="densenet121-res224-all")
