@@ -12,20 +12,33 @@ COPY requirements.txt .
 RUN grep -v '^streamlit' requirements.txt > req-api.txt \
     && pip install -r req-api.txt
 
-# TorchXRayVision currently ships jfhealthcare backbone files with an
-# invalid absolute import. Patch those files explicitly, then smoke-test import.
+# The published TorchXRayVision jfhealthcare package has this bad import in
+# several backbone files (including inception.py, densenet.py and vgg.py).
+# Patch every Python file in that backbone directory, not just a fixed list.
 RUN python - <<'PY'
 from pathlib import Path
-root = Path("/usr/local/lib/python3.11/site-packages/torchxrayvision/baseline_models/jfhealthcare/model/backbone")
-for name in ("densenet.py", "vgg.py"):
-    path = root / name
-    text = path.read_text()
-    text = text.replace("from model.utils import get_norm", "from ..utils import get_norm")
-    path.write_text(text)
-    print(f"Patched {path}")
-PY
 
-RUN python -c "import torchxrayvision as xrv; print('TorchXRayVision import OK'); xrv.models.DenseNet(weights='densenet121-res224-all'); print('DenseNet weights OK')"
+root = Path("/usr/local/lib/python3.11/site-packages/torchxrayvision/baseline_models/jfhealthcare/model/backbone")
+needle = "from model.utils import get_norm"
+replacement = "from ..utils import get_norm"
+patched = []
+
+for path in root.rglob("*.py"):
+    source = path.read_text()
+    if needle in source:
+        path.write_text(source.replace(needle, replacement))
+        patched.append(str(path))
+
+print("Patched jfhealthcare backbone files:", patched)
+if not patched:
+    raise SystemExit("Expected broken import was not found; refusing to continue")
+
+# Fail the image build here if the package/model still cannot import.
+import torchxrayvision as xrv
+print("TorchXRayVision import OK")
+xrv.models.DenseNet(weights="densenet121-res224-all")
+print("DenseNet weights OK")
+PY
 
 COPY model.py report.py pipeline.py db.py models.py ratelimit.py assistant.py api.py ./
 
