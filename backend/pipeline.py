@@ -8,6 +8,8 @@ from PIL import Image
 from model import XRayModel
 from report import make_report
 
+logger = logging.getLogger(__name__)
+
 
 @lru_cache(maxsize=1)
 def get_model() -> XRayModel:
