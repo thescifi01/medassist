@@ -1,6 +1,15 @@
 (() => {
   const API = ((window.APP_CONFIG || {}).API_URL || "").replace(/\/+$/, "");
   const MAX_BYTES = 10 * 1024 * 1024;
+  const themeToggle = document.getElementById("theme-toggle");
+  const savedTheme = localStorage.getItem("medassist_theme");
+  document.documentElement.dataset.theme = savedTheme === "dark" ? "dark" : "light";
+  themeToggle?.addEventListener("click", () => {
+    const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("medassist_theme", next); } catch {}
+    themeToggle.setAttribute("aria-label", next === "dark" ? "Switch to light theme" : "Switch to dark theme");
+  });
   const $ = (id) => document.getElementById(id);
 
   const els = {
@@ -39,7 +48,13 @@
       headers["Content-Type"] = "application/json";
       payload = JSON.stringify(json);
     }
-    const r = await fetch(`${API}${path}`, { method, headers, body: payload, signal });
+    let r;
+    try {
+      r = await fetch(`${API}${path}`, { method, headers, body: payload, signal });
+    } catch (err) {
+      if (err.name === "AbortError") throw err;
+      throw new Error("Could not reach the analysis server. Check the API connection/CORS settings or try again when the server is awake.");
+    }
     if (!r.ok) {
       let detail = `Request failed (${r.status})`;
       try {
@@ -194,6 +209,8 @@
     els.chatLog.replaceChildren();
     for (const m of scan.messages) addBubble(m.role, m.content);
     els.results.hidden = false;
+    const emptyResults = document.getElementById("results-empty");
+    if (emptyResults) emptyResults.hidden = true;
     markActive();
     if (scroll) els.results.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -252,7 +269,7 @@
     if (!confirm("Delete this scan and its chat?")) return;
     try {
       await api(`/scans/${id}`, { method: "DELETE" });
-      if (currentId === id) { currentId = null; els.results.hidden = true; }
+      if (currentId === id) { currentId = null; els.results.hidden = true; const emptyResults = document.getElementById("results-empty"); if (emptyResults) emptyResults.hidden = false; }
       loadHistory();
     } catch (err) { say(`Error: ${err.message}`, true); }
   }
