@@ -10,7 +10,11 @@ from PIL import Image
 class XRayModel:
     def __init__(self, weights: str = "densenet121-res224-all"):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        # The Render free instance has a 512 MiB memory limit. Inference does not
+        # train the network, so freeze parameters to avoid allocating parameter gradients.
+        torch.set_num_threads(1)
         self.model = xrv.models.DenseNet(weights=weights).to(self.device).eval()
+        self.model.requires_grad_(False)
         self.pathologies = list(self.model.pathologies)
         self.tf = torchvision.transforms.Compose(
             [xrv.datasets.XRayCenterCrop(), xrv.datasets.XRayResizer(224)]
@@ -43,10 +47,12 @@ class XRayModel:
             store["a"] = out
 
         handle = self.model.features.register_forward_hook(hook)
-        x = x.clone().requires_grad_(True)
-        self.model.zero_grad()
-        self.model(x)[0, idx].backward()
-        handle.remove()
+        x = x.detach().clone().requires_grad_(True)
+        try:
+            self.model.zero_grad(set_to_none=True)
+            self.model(x)[0, idx].backward()
+        finally:
+            handle.remove()
 
         a, g = store["a"], store["a"].grad
         weights = g.mean(dim=(2, 3), keepdim=True)
