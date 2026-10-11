@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: medassist-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    # The free plan has 512 MB RAM, which is tight for PyTorch.
+    # If the service crashes with out-of-memory, switch this to "starter".
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false   # Postgres connection string (e.g. from Neon). Without it, SQLite is used and data is lost on restart.
+      - key: ALLOWED_ORIGINS
+        sync: false   # set to your Vercel URL, e.g. https://medassist.vercel.app
+      - key: ANTHROPIC_API_KEY
+        sync: false   # needed for the AI assistant and LLM-written reports
