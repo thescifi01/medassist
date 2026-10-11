@@ -1,84 +1,28 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MedAssist: Chest X-ray AI</title>
-  <meta name="description" content="Educational AI demo: chest X-ray findings with a Grad-CAM heatmap, a draft report and an AI assistant.">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f8f7"><title>MedAssist — Imaging workspace</title>
+  <meta name="description" content="Educational chest X-ray analysis workspace with AI-assisted findings, heatmaps and report drafts. Not for clinical diagnosis.">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet"><link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="top">
-    <div class="wrap top-inner">
-      <h1>MedAssist</h1>
-      <span id="server-status" class="pill pill-wait">Server: waking up…</span>
-    </div>
-  </header>
-
-  <main class="wrap">
-    <div class="banner" role="note">
-      <strong>Educational demo only.</strong> Not a medical device and not a diagnosis.
-      Always consult a qualified doctor or radiologist.
-    </div>
-
-    <div class="grid">
-      <div class="col">
-        <form id="form" class="card" novalidate>
-          <label class="drop" id="drop" for="file">
-            <input id="file" class="sr-only" type="file" accept="image/png,image/jpeg">
-            <img id="preview" alt="Selected X-ray preview" hidden>
-            <span id="drop-text">Tap to choose a chest X-ray<br><small>PNG or JPG, max 10 MB</small></span>
-          </label>
-
-          <label for="symptoms" class="field-label">Symptoms (optional)</label>
-          <textarea id="symptoms" rows="3" maxlength="500" placeholder="e.g. cough for 2 weeks, fever"></textarea>
-
-          <button id="submit" type="submit" disabled>Analyze X-ray</button>
-          <p id="msg" class="msg" role="status" aria-live="polite"></p>
-        </form>
-
-        <section class="card">
-          <h2>Your scans</h2>
-          <ul id="history" class="history"></ul>
-          <p id="history-empty" class="muted">No scans yet.</p>
-          <p class="muted small">
-            Saved to this browser's anonymous ID. The original file is not stored;
-            a processed heatmap preview, findings, report and chat are. You can delete any scan.
-          </p>
-        </section>
-      </div>
-
-      <section id="results" class="card" hidden>
-        <h2>Where the model looked <small id="cam-label"></small></h2>
-        <img id="heatmap" class="heatmap" alt="Grad-CAM heatmap over the X-ray">
-
-        <h2>Top findings</h2>
-        <ul id="findings" class="bars"></ul>
-
-        <h2>Draft report</h2>
-        <div id="report" class="report"></div>
-
-        <h2>Ask the AI assistant</h2>
-        <div id="chat-log" class="chat-log" aria-live="polite"></div>
-        <div class="chips" id="chips">
-          <button type="button" class="chip" data-q="Explain these results in simple words.">Explain simply</button>
-          <button type="button" class="chip" data-q="What questions should I ask my doctor?">Questions for my doctor</button>
-          <button type="button" class="chip" data-q="How reliable is this result?">How reliable is this?</button>
-        </div>
-        <form id="chat-form" class="chat-form">
-          <input id="chat-input" type="text" maxlength="1000" placeholder="Ask about this scan…" autocomplete="off" aria-label="Message to the AI assistant">
-          <button id="chat-send" type="submit">Send</button>
-        </form>
-      </section>
-    </div>
-  </main>
-
-  <footer class="wrap">
-    Model: DenseNet121 from <a href="https://github.com/mlmed/torchxrayvision" target="_blank" rel="noopener">TorchXRayVision</a>.
-    Heatmaps use Grad-CAM. Reports and chat replies are written by an LLM and may be wrong.
-  </footer>
-
-  <script src="config.js"></script>
-  <script src="app.js"></script>
-</body>
-</html>
+<header class="topbar"><div class="shell topbar-inner"><a class="brand" href="#" aria-label="MedAssist home"><span class="brand-mark">+</span><span>med<span class="brand-accent">assist</span><small>IMAGING WORKSPACE</small></span></a><div class="top-actions"><span id="server-status" class="status-pill"><i></i> Connecting</span><button id="theme-toggle" class="icon-button" type="button" aria-label="Switch theme" title="Switch light/dark theme"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg></button></div></div></header>
+<main class="shell main">
+<section class="welcome"><div><p class="eyebrow">AI-ASSISTED IMAGING · EDUCATIONAL USE</p><h1>A clearer view.<br><span>Better questions.</span></h1><p class="welcome-copy">Explore chest X-ray findings with an AI-assisted analysis, visual attention map, and plain-language report draft.</p></div><aside class="notice"><span class="notice-icon">i</span><p><strong>Not for diagnosis</strong><br>This research demo is not a medical device. Results can be wrong and must be reviewed by a qualified clinician.</p></aside></section>
+<div class="workspace"><div class="left-column">
+<section class="panel upload-panel"><div class="panel-heading"><div><p class="eyebrow">01 / IMAGE INPUT</p><h2>Upload chest X-ray</h2></div><span class="step-number">01</span></div>
+<form id="form" novalidate><label class="dropzone" id="drop" for="file"><input id="file" class="sr-only" type="file" accept="image/png,image/jpeg"><span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 16V4m-5 5 5-5 5 5M4 16v4h16v-4"/></svg></span><span id="drop-text"><strong>Choose an X-ray image</strong><small>or tap here to browse your device</small><em>PNG or JPG · up to 10 MB</em></span><img id="preview" alt="Selected chest X-ray preview" hidden></label>
+<label for="symptoms" class="field-label">Clinical context <span>OPTIONAL</span></label><textarea id="symptoms" rows="3" maxlength="500" placeholder="Symptoms, duration, or relevant context…"></textarea><button id="submit" class="primary-button" type="submit" disabled><span>Analyze image</span><span aria-hidden="true">→</span></button><p id="msg" class="msg" role="status" aria-live="polite"></p></form>
+<div class="privacy-note"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span>Use de-identified images only. Do not upload personal information.</span></div></section>
+<section class="panel history-panel"><div class="panel-heading"><div><p class="eyebrow">RECENT ACTIVITY</p><h2>Your scans</h2></div><span class="history-icon">↗</span></div><ul id="history" class="history"></ul><p id="history-empty" class="muted">Your recent scans will appear here.</p><p class="small-note">Scan history is linked to this browser's anonymous ID. Delete entries when finished.</p></section>
+</div>
+<section id="results" class="panel results-panel" hidden><div class="panel-heading"><div><p class="eyebrow">02 / ANALYSIS</p><h2>Analysis overview</h2></div><span class="result-badge">AI output</span></div>
+<div class="heatmap-block"><div class="subheading"><h3>Visual attention map</h3><span id="cam-label">Model focus</span></div><img id="heatmap" class="heatmap" alt="Grad-CAM visualization over the X-ray"><p class="caption">Highlighted areas show where the model's attention was concentrated; they do not prove disease is present.</p></div>
+<div class="findings-block"><div class="subheading"><h3>Model findings</h3><span class="caption">Scores are not diagnoses</span></div><ul id="findings" class="bars"></ul></div>
+<div class="report-block"><div class="subheading"><h3>Report draft</h3><span class="draft-tag">REVIEW REQUIRED</span></div><div id="report" class="report"></div></div>
+<div class="assistant-block"><div class="panel-heading"><div><p class="eyebrow">03 / FOLLOW-UP</p><h2>Ask MedAssist</h2></div><span class="assistant-mark">✳</span></div><p class="assistant-intro">Ask for an explanation of the model output or help preparing questions for your clinician.</p><div id="chat-log" class="chat-log" aria-live="polite"></div><div class="chips" id="chips"><button type="button" class="chip" data-q="Explain these model results in simple language.">Explain simply</button><button type="button" class="chip" data-q="What questions should I ask my radiologist?">Questions for my doctor</button><button type="button" class="chip" data-q="What are the limitations of this result?">Limitations</button></div><form id="chat-form" class="chat-form"><input id="chat-input" type="text" maxlength="1000" placeholder="Ask a question…" autocomplete="off" aria-label="Message to MedAssist"><button id="chat-send" type="submit" aria-label="Send message">↑</button></form></div></section>
+<section id="results-empty" class="panel empty-results"><div class="empty-art" aria-hidden="true"><div class="scan-frame"><span></span><span></span><span></span><b>+</b></div></div><p class="eyebrow">YOUR WORKSPACE</p><h2>Analysis will appear here</h2><p>Upload a chest X-ray to view model-generated findings, a heatmap, and a draft report in one place.</p><div class="empty-points"><span>01 <b>Image analysis</b></span><span>02 <b>Visual explanation</b></span><span>03 <b>Report draft</b></span></div></section></div></main>
+<footer class="shell footer"><span>MedAssist · Educational research prototype</span><span>AI outputs may be inaccurate. Always consult a qualified clinician.</span><span>Model: TorchXRayVision DenseNet121</span></footer>
+<script src="config.js"></script><script src="app.js"></script></body></html>
