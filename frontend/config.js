@@ -1,5 +1,4 @@
-// After deploying the backend on Render, replace this with your service URL,
-// e.g. "https://medassist-api.onrender.com" (no trailing slash).
+// Render backend URL
 window.APP_CONFIG = {
-  API_URL: "http://localhost:8000",
+  API_URL: "https://medassist-api-1xny.onrender.com",
 };
