@@ -1,0 +1,14 @@
+# torch and torchvision (CPU build) are installed separately in the Dockerfile.
+# For local runs: pip install torch torchvision, then pip install -r requirements.txt
+torchxrayvision
+scikit-image
+numpy
+pillow
+matplotlib
+fastapi
+uvicorn[standard]
+python-multipart
+anthropic
+sqlalchemy>=2.0
+psycopg2-binary
+streamlit  # optional, only for streamlit_app.py local demo
