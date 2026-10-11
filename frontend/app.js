@@ -274,11 +274,11 @@
     } catch (err) { say(`Error: ${err.message}`, true); }
   }
 
-  els.form.addEventListener("submit", async (e) => {
+  let scanAnimationTimer = null;\n  let scanAnimationStart = 0;\n  function showScanning() {\n    const overlay = $("scan-overlay");\n    if (!overlay) return;\n    const image = $("scan-source");\n    if (image && els.preview.src) image.src = els.preview.src;\n    overlay.hidden = false;\n    document.body.classList.add("scan-active");\n    scanAnimationStart = Date.now();\n    const steps = [...overlay.querySelectorAll(".scan-step")];\n    const pct = $("scan-percent");\n    const timer = $("scan-timer");\n    let lastStep = -1;\n    clearInterval(scanAnimationTimer);\n    scanAnimationTimer = setInterval(() => {\n      const seconds = Math.floor((Date.now() - scanAnimationStart) / 1000);\n      if (timer) timer.textContent = String(Math.floor(seconds / 60)).padStart(2,"0") + ":" + String(seconds % 60).padStart(2,"0");\n      const progress = Math.min(92, 8 + seconds * 2);\n      if (pct) pct.textContent = String(progress).padStart(2,"0") + "%";\n      const active = seconds < 3 ? 0 : seconds < 12 ? 1 : 2;\n      if (active !== lastStep) {\n        steps.forEach((step, i) => { step.classList.toggle("active", i === active); step.classList.toggle("done", i < active); const status = step.querySelector("b"); if (status) status.textContent = i < active ? "Complete" : i === active ? "In progress" : "Waiting"; });\n        lastStep = active;\n      }\n    }, 250);\n  }\n  function hideScanning() {\n    clearInterval(scanAnimationTimer); scanAnimationTimer = null;\n    const overlay = $("scan-overlay");\n    if (overlay) overlay.hidden = true;\n    document.body.classList.remove("scan-active");\n  }\n\n  els.form.addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!chosen) return;
     els.submit.disabled = true;
-    say("Analyzing… the first request can take up to a minute while the server wakes up.");
+    say("Analyzing… the first request can take up to a minute while the server wakes up.");\n    showScanning();
 
     const body = new FormData();
     body.append("file", chosen);
@@ -300,5 +300,5 @@
     }
   });
 
-  ping();
+  document.querySelectorAll("[data-sample]").forEach((button) => {\n    button.addEventListener("click", async () => {\n      const url = button.dataset.sample;\n      const original = button.innerHTML;\n      button.disabled = true; button.textContent = "Loading sample…";\n      try {\n        const response = await fetch(url, { mode: "cors" });\n        if (!response.ok) throw new Error("Sample image could not be loaded");\n        const blob = await response.blob();\n        const file = new File([blob], "nih-chest-xray-sample.png", { type: blob.type || "image/png" });\n        const transfer = new DataTransfer(); transfer.items.add(file); els.file.files = transfer.files;\n        els.file.dispatchEvent(new Event("change", { bubbles: true }));\n        document.getElementById("drop").scrollIntoView({ behavior: "smooth", block: "center" });\n        say("Research sample loaded. Add optional context, then select Analyze image.");\n      } catch (error) {\n        say("The remote sample could not be imported automatically. Open the NIH image in a new tab, save it to your device, then upload it here.", true);\n        window.open(url, "_blank", "noopener,noreferrer");\n      } finally { button.disabled = false; button.innerHTML = original; }\n    });\n  });\n\n  ping();
 })();
