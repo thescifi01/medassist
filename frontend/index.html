@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MedAssist: Chest X-ray AI</title>
+  <meta name="description" content="Educational AI demo: chest X-ray findings with a Grad-CAM heatmap, a draft report and an AI assistant.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-inner">
+      <h1>MedAssist</h1>
+      <span id="server-status" class="pill pill-wait">Server: waking up…</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="banner" role="note">
+      <strong>Educational demo only.</strong> Not a medical device and not a diagnosis.
+      Always consult a qualified doctor or radiologist.
+    </div>
+
+    <div class="grid">
+      <div class="col">
+        <form id="form" class="card" novalidate>
+          <label class="drop" id="drop" for="file">
+            <input id="file" class="sr-only" type="file" accept="image/png,image/jpeg">
+            <img id="preview" alt="Selected X-ray preview" hidden>
+            <span id="drop-text">Tap to choose a chest X-ray<br><small>PNG or JPG, max 10 MB</small></span>
+          </label>
+
+          <label for="symptoms" class="field-label">Symptoms (optional)</label>
+          <textarea id="symptoms" rows="3" maxlength="500" placeholder="e.g. cough for 2 weeks, fever"></textarea>
+
+          <button id="submit" type="submit" disabled>Analyze X-ray</button>
+          <p id="msg" class="msg" role="status" aria-live="polite"></p>
+        </form>
+
+        <section class="card">
+          <h2>Your scans</h2>
+          <ul id="history" class="history"></ul>
+          <p id="history-empty" class="muted">No scans yet.</p>
+          <p class="muted small">
+            Saved to this browser's anonymous ID. The original file is not stored;
+            a processed heatmap preview, findings, report and chat are. You can delete any scan.
+          </p>
+        </section>
+      </div>
+
+      <section id="results" class="card" hidden>
+        <h2>Where the model looked <small id="cam-label"></small></h2>
+        <img id="heatmap" class="heatmap" alt="Grad-CAM heatmap over the X-ray">
+
+        <h2>Top findings</h2>
+        <ul id="findings" class="bars"></ul>
+
+        <h2>Draft report</h2>
+        <div id="report" class="report"></div>
+
+        <h2>Ask the AI assistant</h2>
+        <div id="chat-log" class="chat-log" aria-live="polite"></div>
+        <div class="chips" id="chips">
+          <button type="button" class="chip" data-q="Explain these results in simple words.">Explain simply</button>
+          <button type="button" class="chip" data-q="What questions should I ask my doctor?">Questions for my doctor</button>
+          <button type="button" class="chip" data-q="How reliable is this result?">How reliable is this?</button>
+        </div>
+        <form id="chat-form" class="chat-form">
+          <input id="chat-input" type="text" maxlength="1000" placeholder="Ask about this scan…" autocomplete="off" aria-label="Message to the AI assistant">
+          <button id="chat-send" type="submit">Send</button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <footer class="wrap">
+    Model: DenseNet121 from <a href="https://github.com/mlmed/torchxrayvision" target="_blank" rel="noopener">TorchXRayVision</a>.
+    Heatmaps use Grad-CAM. Reports and chat replies are written by an LLM and may be wrong.
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
